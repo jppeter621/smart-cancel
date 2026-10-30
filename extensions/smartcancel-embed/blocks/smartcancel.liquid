@@ -1,0 +1,153 @@
+{% if order %}
+  <div
+    class="smartcancel-container"
+    data-order-id="{{ order.id }}"
+    data-order-name="{{ order.name }}"
+    data-customer-email="{{ order.email }}"
+  >
+    <div class="smartcancel-header">
+      <h3 class="smartcancel-title">{{ block.settings.heading | default: "Need to make changes to your order?" }}</h3>
+      <div class="smartcancel-badge">
+        <span class="smartcancel-pulse"></span>
+        <span>Checking order eligibility...</span>
+      </div>
+    </div>
+
+    <div class="smartcancel-actions">
+      <button
+        type="button"
+        id="smartcancel-open-address-btn"
+        class="smartcancel-btn"
+        onclick="openSmartAddressModal()"
+        style="display: none;"
+      >
+        ✏️ Edit Shipping Address
+      </button>
+
+      <button
+        type="button"
+        id="smartcancel-open-cancel-btn"
+        class="smartcancel-btn smartcancel-btn-cancel"
+        onclick="openSmartCancelModal()"
+        style="display: none;"
+      >
+        ❌ Cancel Order
+      </button>
+    </div>
+  </div>
+
+  <!-- Cancel Confirmation Modal -->
+  <div id="smartcancel-cancel-modal" class="smartcancel-modal-overlay">
+    <div class="smartcancel-modal">
+      <div class="smartcancel-modal-header">
+        <h3 style="margin: 0; font-size: 18px;">Cancel Order {{ order.name }}</h3>
+        <button type="button" class="smartcancel-modal-close" onclick="closeSmartCancelModal()">&times;</button>
+      </div>
+
+      <!-- Optional Retention Offer -->
+      <div id="smartcancel-retention-banner" class="smartcancel-retention-banner" style="display: none;">
+        <strong>Wait! Would you like to keep your order?</strong>
+        <p style="margin: 6px 0 0; font-size: 13px;">Use this exclusive discount code on your next purchase:</p>
+        <span id="smartcancel-retention-code" class="smartcancel-discount-pill">KEEP10</span>
+      </div>
+
+      <div class="smartcancel-form-group">
+        <label class="smartcancel-label" for="smartcancel-reason-select">Please tell us why you are cancelling:</label>
+        <select id="smartcancel-reason-select" class="smartcancel-select">
+          <option value="Ordered by mistake">Ordered by mistake</option>
+          <option value="Changed my mind">Changed my mind</option>
+          <option value="Shipping time is too long">Shipping time is too long</option>
+          <option value="Found a better price">Found a better price</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <p style="font-size: 12px; color: #6d7175; margin-bottom: 20px;">
+        ⚠️ This action cannot be undone. Inventory will be restocked and your payment will be refunded.
+      </p>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="smartcancel-btn" onclick="closeSmartCancelModal()">Keep My Order</button>
+        <button
+          type="button"
+          id="smartcancel-submit-cancel-btn"
+          class="smartcancel-btn smartcancel-btn-cancel"
+          onclick="confirmOrderCancellation()"
+        >
+          Confirm Cancellation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Shipping Address Modal -->
+  <div id="smartcancel-address-modal" class="smartcancel-modal-overlay">
+    <div class="smartcancel-modal">
+      <div class="smartcancel-modal-header">
+        <h3 style="margin: 0; font-size: 18px;">Edit Shipping Address</h3>
+        <button type="button" class="smartcancel-modal-close" onclick="closeSmartAddressModal()">&times;</button>
+      </div>
+
+      <div class="smartcancel-form-group">
+        <label class="smartcancel-label" for="smartcancel-addr1">Street Address</label>
+        <input type="text" id="smartcancel-addr1" class="smartcancel-input" placeholder="123 Main St" />
+      </div>
+
+      <div class="smartcancel-form-group">
+        <label class="smartcancel-label" for="smartcancel-addr2">Apartment / Suite / Unit (optional)</label>
+        <input type="text" id="smartcancel-addr2" class="smartcancel-input" placeholder="Apt 4B" />
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="smartcancel-form-group">
+          <label class="smartcancel-label" for="smartcancel-city">City</label>
+          <input type="text" id="smartcancel-city" class="smartcancel-input" placeholder="City" />
+        </div>
+        <div class="smartcancel-form-group">
+          <label class="smartcancel-label" for="smartcancel-zip">Postal / ZIP Code</label>
+          <input type="text" id="smartcancel-zip" class="smartcancel-input" placeholder="10001" />
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="smartcancel-form-group">
+          <label class="smartcancel-label" for="smartcancel-province">State / Province</label>
+          <input type="text" id="smartcancel-province" class="smartcancel-input" placeholder="State" />
+        </div>
+        <div class="smartcancel-form-group">
+          <label class="smartcancel-label" for="smartcancel-country">Country</label>
+          <input type="text" id="smartcancel-country" class="smartcancel-input" placeholder="Country" />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
+        <button type="button" class="smartcancel-btn" onclick="closeSmartAddressModal()">Cancel</button>
+        <button
+          type="button"
+          id="smartcancel-submit-address-btn"
+          class="smartcancel-btn smartcancel-btn-primary"
+          onclick="confirmAddressUpdate()"
+        >
+          Save New Address
+        </button>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "SmartCancel Self-Serve",
+  "target": "section",
+  "stylesheet": "smartcancel.css",
+  "javascript": "smartcancel.js",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Need to make changes to your order?"
+    }
+  ]
+}
+{% endschema %}

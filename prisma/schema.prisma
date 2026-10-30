@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model CancelSettings {
+  id                        String    @id @default(cuid())
+  shop                      String    @unique
+  cancellationWindowMinutes Int       @default(60)
+  allowAddressEdit          Boolean   @default(true)
+  allowCancellation         Boolean   @default(true)
+  autoRestock               Boolean   @default(true)
+  autoRefund                Boolean   @default(true)
+  reasonOptions             String    @default("Changed my mind,Found a better price,Ordered by mistake,Shipping time is too long,Wrong shipping address,Other")
+  retentionDiscountEnabled  Boolean   @default(false)
+  retentionDiscountCode     String?   @default("KEEP10")
+  retentionDiscountPercent  Int?      @default(10)
+  plan                      String    @default("FREE")
+  monthlyActionsCount       Int       @default(0)
+  monthlyActionsLimit       Int       @default(25)
+  billingPeriodStart        DateTime  @default(now())
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+}
+
+model CancelAction {
+  id            String    @id @default(cuid())
+  shop          String
+  orderId       String
+  orderName     String
+  customerEmail String?
+  actionType    String
+  reason        String?
+  details       String?
+  status        String
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+
+  @@index([shop, createdAt])
+}

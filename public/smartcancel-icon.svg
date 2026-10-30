@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle App Container -->
+  <rect x="32" y="32" width="448" height="448" rx="112" fill="url(#bgGrad)" filter="url(#shadow)"/>
+
+  <!-- Subtle Inner Ring Highlight -->
+  <rect x="34" y="34" width="444" height="444" rx="110" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2"/>
+
+  <!-- Circular Arrow (Order Control / Rollback / Self-Service) -->
+  <path d="M 256 128 A 128 128 0 1 1 146 190" fill="none" stroke="url(#accentGrad)" stroke-width="28" stroke-linecap="round"/>
+  
+  <!-- Arrow Head -->
+  <path d="M 120 148 L 146 190 L 194 170" fill="none" stroke="url(#accentGrad)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Shield / Lock Core with Smart Cancel Check & Protection -->
+  <g transform="translate(256, 276)">
+    <!-- Central Shield Glyph -->
+    <path d="M 0 -64 C 44 -64 76 -78 84 -88 C 84 -20 72 48 0 88 C -72 48 -84 -20 -84 -88 C -76 -78 -44 -64 0 -64 Z" 
+          fill="url(#primaryGrad)" filter="url(#shadow)"/>
+    
+    <!-- Clean Minimal Checkmark -->
+    <path d="M -26 -6 L -8 14 L 32 -26" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

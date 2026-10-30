@@ -1,0 +1,205 @@
+/* SmartCancel Customer Portal Styles */
+.smartcancel-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.smartcancel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f2f3;
+}
+
+.smartcancel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.smartcancel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #e4f8ed;
+  color: #108043;
+}
+
+.smartcancel-badge.warning {
+  background: #fff4e5;
+  color: #b95000;
+}
+
+.smartcancel-badge.expired {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+
+.smartcancel-pulse {
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: smartcancel-pulse-anim 1.8s infinite;
+}
+
+@keyframes smartcancel-pulse-anim {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.smartcancel-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.smartcancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #d3d5d7;
+  background: #ffffff;
+  color: #202223;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.smartcancel-btn:hover {
+  background: #f6f6f7;
+}
+
+.smartcancel-btn-cancel {
+  border-color: #ffd2d2;
+  color: #d72c0d;
+  background: #fff8f8;
+}
+
+.smartcancel-btn-cancel:hover {
+  background: #ffeaea;
+}
+
+.smartcancel-btn-primary {
+  background: #008060;
+  color: #ffffff;
+  border-color: #008060;
+}
+
+.smartcancel-btn-primary:hover {
+  background: #006e52;
+}
+
+/* Modal Overlay */
+.smartcancel-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 999999;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.smartcancel-modal-overlay.active {
+  display: flex;
+}
+
+.smartcancel-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.smartcancel-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.smartcancel-modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6d7175;
+}
+
+.smartcancel-form-group {
+  margin-bottom: 14px;
+}
+
+.smartcancel-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #202223;
+  margin-bottom: 4px;
+}
+
+.smartcancel-input, .smartcancel-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.smartcancel-input:focus, .smartcancel-select:focus {
+  outline: none;
+  border-color: #008060;
+  box-shadow: 0 0 0 2px rgba(0, 128, 96, 0.2);
+}
+
+.smartcancel-retention-banner {
+  background: #f0f7ff;
+  border: 1px dashed #2c6ecb;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.smartcancel-discount-pill {
+  display: inline-block;
+  background: #2c6ecb;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 600;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
