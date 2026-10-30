@@ -1,16 +1,13 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-
-name = "SmartCancel"
 client_id = "4930a421deb8b951cdd94f547b758da0"
-embedded = true
+name = "SmartCancel"
 application_url = "https://smart-cancel.vercel.app"
+embedded = true
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_orders,read_orders,read_customers"
 
 [webhooks]
-api_version = "2027-01"
+api_version = "2026-10"
 
   [[webhooks.subscriptions]]
   uri = "/webhooks/app/uninstalled"
@@ -25,12 +22,12 @@ api_version = "2027-01"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "/api/proxy"
+url = "https://smart-cancel.vercel.app/api/proxy"
 subpath = "smartcancel"
 prefix = "apps"
 
-[build]
-automatically_update_urls_on_dev = true
-
 [auth]
 redirect_urls = [ "https://smart-cancel.vercel.app/auth/callback" ]
+
+[build]
+automatically_update_urls_on_dev = true
