@@ -1,0 +1,9 @@
+{
+  "name": "SmartCancel Self-Serve Portal",
+  "cancel_button": "Cancel Order",
+  "edit_address_button": "Edit Shipping Address",
+  "time_remaining": "minutes left to edit or cancel",
+  "expired": "Order modification window has expired",
+  "retention_title": "Wait! We'd love to keep your order",
+  "retention_subtitle": "Use this special discount on your purchase:"
+}
