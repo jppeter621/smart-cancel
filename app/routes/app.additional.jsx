@@ -1,3 +1,5 @@
+import { useRouteError } from "react-router";
+import { boundary } from "@shopify/shopify-app-react-router/server";
 import {
   Card,
   Layout,
@@ -118,3 +120,10 @@ export default function InsightsAndHelpPage() {
     </Page>
   );
 }
+export function ErrorBoundary() {
+  return boundary.error(useRouteError());
+}
+
+export const headers = (headersArgs) => {
+  return boundary.headers(headersArgs);
+};

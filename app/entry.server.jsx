@@ -7,6 +7,17 @@ import { addDocumentResponseHeaders } from "./shopify.server";
 
 export const streamTimeout = 5000;
 
+export function handleError(error, { request }) {
+  global.lastServerError = {
+    message: error?.message || String(error),
+    stack: error?.stack || null,
+    name: error?.name,
+    time: new Date().toISOString(),
+    url: request?.url,
+  };
+  console.error("React Router Server Error:", error);
+}
+
 export default async function handleRequest(
   request,
   responseStatusCode,
@@ -35,11 +46,26 @@ export default async function handleRequest(
           pipe(body);
         },
         onShellError(error) {
+          global.lastServerError = {
+            message: error?.message || String(error),
+            stack: error?.stack || null,
+            name: error?.name,
+            time: new Date().toISOString(),
+            phase: "onShellError",
+          };
+          console.error("Shell error:", error);
           reject(error);
         },
         onError(error) {
+          global.lastServerError = {
+            message: error?.message || String(error),
+            stack: error?.stack || null,
+            name: error?.name,
+            time: new Date().toISOString(),
+            phase: "onError",
+          };
           responseStatusCode = 500;
-          console.error(error);
+          console.error("Stream error:", error);
         },
       },
     );
