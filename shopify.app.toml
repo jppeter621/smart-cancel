@@ -2,7 +2,7 @@
 
 client_id = "741616eef0a5a11569f7552c5ba52ff5"
 name = "smartcancel"
-application_url = "https://example.com"
+application_url = "https://smart-cancel.vercel.app"
 embedded = true
 
 [build]
@@ -25,10 +25,10 @@ api_version = "2027-01"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,write_metaobjects,write_metaobject_definitions"
+scopes = "write_orders,read_orders,read_customers"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://smart-cancel.vercel.app/auth/callback" ]
 
 [app_proxy]
 url = "https://smart-cancel.vercel.app/api/proxy"
