@@ -25,6 +25,12 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const errorMessage =
+    error?.data?.message ||
+    error?.data ||
+    error?.message ||
+    (typeof error === "string" ? error : JSON.stringify(error, null, 2));
+
   return (
     <html lang="en">
       <head>
@@ -42,9 +48,11 @@ export function ErrorBoundary() {
             padding: "1rem",
             borderRadius: "8px",
             overflowX: "auto",
+            whiteSpace: "pre-wrap",
+            fontSize: "14px",
           }}
         >
-          {error?.message || (typeof error === "string" ? error : JSON.stringify(error, null, 2))}
+          {errorMessage}
         </pre>
         {error?.stack && (
           <details style={{ marginTop: "1rem" }}>

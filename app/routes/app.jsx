@@ -7,14 +7,24 @@ import enTranslations from "@shopify/polaris/locales/en.json";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
-import { authenticate } from "../shopify.server";
+import { authenticate } from "../shopify.server.js";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
-
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  try {
+    await authenticate.admin(request);
+    return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error("Auth loader error:", error);
+    throw new Response(
+      `Auth Loader Failed: ${error?.message || error}\n${error?.stack || ""}`,
+      { status: 500 }
+    );
+  }
 };
 
 export default function App() {
@@ -42,10 +52,15 @@ export function ErrorBoundary() {
   const shopifyError = boundary.error(error);
   if (shopifyError) return shopifyError;
 
+  const errorMessage =
+    error?.data?.message ||
+    error?.data ||
+    error?.message ||
+    (typeof error === "string" ? error : JSON.stringify(error, null, 2));
+
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h2 style={{ color: "#d72c0d" }}>SmartCancel Error</h2>
-      <p>An unexpected error occurred while loading the app:</p>
       <pre
         style={{
           background: "#fff4f4",
@@ -54,9 +69,11 @@ export function ErrorBoundary() {
           padding: "1rem",
           borderRadius: "8px",
           overflowX: "auto",
+          whiteSpace: "pre-wrap",
+          fontSize: "14px",
         }}
       >
-        {error?.message || (typeof error === "string" ? error : JSON.stringify(error, null, 2))}
+        {errorMessage}
       </pre>
       {error?.stack && (
         <details style={{ marginTop: "1rem" }}>

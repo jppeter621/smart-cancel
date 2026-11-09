@@ -24,7 +24,8 @@ import { authenticate } from "../shopify.server";
 import db from "../db.server";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  try {
+    const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
   let settings = await db.cancelSettings.findUnique({ where: { shop } });
@@ -70,8 +71,12 @@ export const loader = async ({ request }) => {
       usedActions: settings.monthlyActionsCount,
       limitActions: settings.monthlyActionsLimit,
       plan: settings.plan,
-    },
-  };
+      },
+      };
+  } catch (error) {
+    if (error instanceof Response) throw error;
+    throw new Response("Dashboard Loader Failed: " + (error?.message || error) + "\n" + (error?.stack || ""), { status: 500 });
+  }
 };
 
 export const action = async ({ request }) => {
