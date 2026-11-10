@@ -1,5 +1,5 @@
 /* global process */
-import { Link, Outlet, useLoaderData, useRouteError } from "react-router";
+import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
@@ -14,7 +14,7 @@ export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
 
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "741616eef0a5a11569f7552c5ba52ff5" };
 };
 
 export default function App() {
@@ -24,11 +24,11 @@ export default function App() {
     <AppProvider embedded apiKey={apiKey}>
       <PolarisAppProvider i18n={enTranslations}>
         <NavMenu>
-          <Link to="/app" rel="home">
+          <a href="/app" rel="home">
             Dashboard
-          </Link>
-          <Link to="/app/billing">Plans & Billing</Link>
-          <Link to="/app/additional">Insights & FAQs</Link>
+          </a>
+          <a href="/app/billing">Plans & Billing</a>
+          <a href="/app/additional">Insights & FAQs</a>
         </NavMenu>
         <Outlet />
       </PolarisAppProvider>

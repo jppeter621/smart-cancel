@@ -11,14 +11,25 @@ import prisma from "./db.server.js";
 export const MONTHLY_PLAN_GROWTH = "Growth Plan";
 export const MONTHLY_PLAN_PRO = "Pro Plan";
 
+const defaultScopes = ["write_orders", "read_orders", "read_customers"];
+const scopes =
+  process.env.SCOPES && process.env.SCOPES.includes("orders")
+    ? process.env.SCOPES.split(",").map((s) => s.trim())
+    : defaultScopes;
+
+const appUrl = (process.env.SHOPIFY_APP_URL || "https://smart-cancel.vercel.app").replace(/\/+$/, "");
+
 const shopify = shopifyApp({
-  apiKey: process.env.SHOPIFY_API_KEY,
+  apiKey: process.env.SHOPIFY_API_KEY || "741616eef0a5a11569f7552c5ba52ff5",
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.October25,
-  scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
+  scopes,
+  appUrl,
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  sessionStorage: new PrismaSessionStorage(prisma, {
+    connectionRetries: 5,
+    connectionRetryIntervalMs: 2000,
+  }),
   distribution: AppDistribution.AppStore,
   billing: {
     [MONTHLY_PLAN_GROWTH]: {
