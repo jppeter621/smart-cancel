@@ -1,6 +1,6 @@
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useState, useCallback } from "react";
-import { useLoaderData, useSubmit, useNavigation } from "react-router";
+import { useLoaderData, useSubmit, useNavigation, useNavigate } from "react-router";
 import {
   Page,
   Layout,
@@ -132,6 +132,7 @@ export default function SmartCancelDashboard() {
   const { settings, actions, metrics } = useLoaderData();
   const submit = useSubmit();
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const isSaving = navigation.state === "submitting";
 
   // Form State
@@ -479,7 +480,7 @@ export default function SmartCancelDashboard() {
                     to Growth or Pro for unlimited actions and automated
                     retention workflows.
                   </Text>
-                  <Button variant="primary" fullWidth url="/app/billing">
+                  <Button variant="primary" fullWidth onClick={() => navigate("/app/billing")}>
                     View Upgrade Plans
                   </Button>
                 </BlockStack>
