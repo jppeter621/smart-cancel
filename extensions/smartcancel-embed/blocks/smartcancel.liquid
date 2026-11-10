@@ -58,21 +58,18 @@
           <option value="Changed my mind">Changed my mind</option>
           <option value="Shipping time is too long">Shipping time is too long</option>
           <option value="Found a better price">Found a better price</option>
+          <option value="Wrong shipping address">Wrong shipping address</option>
           <option value="Other">Other</option>
         </select>
       </div>
 
-      <p style="font-size: 12px; color: #6d7175; margin-bottom: 20px;">
-        ⚠️ This action cannot be undone. Inventory will be restocked and your payment will be refunded.
-      </p>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
         <button type="button" class="smartcancel-btn" onclick="closeSmartCancelModal()">Keep My Order</button>
         <button
           type="button"
-          id="smartcancel-submit-cancel-btn"
-          class="smartcancel-btn smartcancel-btn-cancel"
-          onclick="confirmOrderCancellation()"
+          id="smartcancel-confirm-cancel-btn"
+          class="smartcancel-btn smartcancel-btn-danger"
+          onclick="confirmCancellation()"
         >
           Confirm Cancellation
         </button>
@@ -80,7 +77,7 @@
     </div>
   </div>
 
-  <!-- Edit Shipping Address Modal -->
+  <!-- Address Edit Modal -->
   <div id="smartcancel-address-modal" class="smartcancel-modal-overlay">
     <div class="smartcancel-modal">
       <div class="smartcancel-modal-header">
@@ -89,34 +86,39 @@
       </div>
 
       <div class="smartcancel-form-group">
-        <label class="smartcancel-label" for="smartcancel-addr1">Street Address</label>
-        <input type="text" id="smartcancel-addr1" class="smartcancel-input" placeholder="123 Main St" />
+        <label class="smartcancel-label">Full Name</label>
+        <input type="text" id="smartcancel-addr-name" class="smartcancel-input" placeholder="e.g. John Doe">
       </div>
 
       <div class="smartcancel-form-group">
-        <label class="smartcancel-label" for="smartcancel-addr2">Apartment / Suite / Unit (optional)</label>
-        <input type="text" id="smartcancel-addr2" class="smartcancel-input" placeholder="Apt 4B" />
+        <label class="smartcancel-label">Street Address</label>
+        <input type="text" id="smartcancel-addr-1" class="smartcancel-input" placeholder="123 Main St">
+      </div>
+
+      <div class="smartcancel-form-group">
+        <label class="smartcancel-label">Apartment, suite, etc. (optional)</label>
+        <input type="text" id="smartcancel-addr-2" class="smartcancel-input" placeholder="Apt 4B">
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="smartcancel-form-group">
-          <label class="smartcancel-label" for="smartcancel-city">City</label>
-          <input type="text" id="smartcancel-city" class="smartcancel-input" placeholder="City" />
+          <label class="smartcancel-label">City</label>
+          <input type="text" id="smartcancel-addr-city" class="smartcancel-input" placeholder="City">
         </div>
         <div class="smartcancel-form-group">
-          <label class="smartcancel-label" for="smartcancel-zip">Postal / ZIP Code</label>
-          <input type="text" id="smartcancel-zip" class="smartcancel-input" placeholder="10001" />
+          <label class="smartcancel-label">State / Province</label>
+          <input type="text" id="smartcancel-addr-province" class="smartcancel-input" placeholder="State / Province">
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="smartcancel-form-group">
-          <label class="smartcancel-label" for="smartcancel-province">State / Province</label>
-          <input type="text" id="smartcancel-province" class="smartcancel-input" placeholder="State" />
+          <label class="smartcancel-label">Postal / ZIP Code</label>
+          <input type="text" id="smartcancel-addr-zip" class="smartcancel-input" placeholder="10001">
         </div>
         <div class="smartcancel-form-group">
-          <label class="smartcancel-label" for="smartcancel-country">Country</label>
-          <input type="text" id="smartcancel-country" class="smartcancel-input" placeholder="Country" />
+          <label class="smartcancel-label">Country</label>
+          <input type="text" id="smartcancel-addr-country" class="smartcancel-input" placeholder="United States">
         </div>
       </div>
 
@@ -131,6 +133,31 @@
           Save New Address
         </button>
       </div>
+    </div>
+  </div>
+{% elsif request.design_mode %}
+  <!-- Theme Editor Live Preview -->
+  <div class="smartcancel-container" style="border: 2px dashed #008060; padding: 24px; border-radius: 12px; background: #f6fdf9; margin: 20px auto; max-width: 800px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h3 style="margin: 0; color: #008060; font-size: 18px;">🛡️ SmartCancel Self-Serve (Active)</h3>
+        <p style="margin: 4px 0 0 0; color: #666; font-size: 13px;">{{ block.settings.heading | default: "Need to make changes to your order?" }}</p>
+      </div>
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: #e3f1df; color: #108043; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #108043;"></span>
+        <span>60 minutes left to edit or cancel</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <button type="button" class="smartcancel-btn" style="background: #fff; border: 1px solid #c9cccf; padding: 10px 16px; border-radius: 6px; font-weight: 500; cursor: pointer;">
+        ✏️ Edit Shipping Address
+      </button>
+      <button type="button" class="smartcancel-btn" style="background: #fff4f4; border: 1px solid #fed2d2; color: #bf0711; padding: 10px 16px; border-radius: 6px; font-weight: 500; cursor: pointer;">
+        ❌ Cancel Order
+      </button>
+    </div>
+    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #e1e3e5; font-size: 12px; color: #6d7175;">
+      💡 <em>This preview confirms SmartCancel is embedded. On real customer orders, buyers can click these buttons to self-service their order within your 60-minute window.</em>
     </div>
   </div>
 {% endif %}
