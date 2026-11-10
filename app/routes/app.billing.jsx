@@ -140,6 +140,7 @@ export default function BillingPage() {
   const { currentPlan } = useLoaderData();
   const fetcher = useFetcher();
   const isUpgrading = fetcher.state !== "idle";
+  const submittingPlan = fetcher.formData?.get("plan");
 
   useEffect(() => {
     if (fetcher.data?.confirmationUrl) {
@@ -232,6 +233,7 @@ export default function BillingPage() {
               </List>
               <Button
                 disabled={currentPlan === "FREE" || isUpgrading}
+                loading={isUpgrading && submittingPlan === "FREE"}
                 onClick={() => handleSelectPlan("FREE")}
               >
                 {currentPlan === "FREE" ? "Active" : "Downgrade to Free"}
@@ -276,7 +278,7 @@ export default function BillingPage() {
               <Button
                 variant="primary"
                 disabled={currentPlan === "GROWTH" || isUpgrading}
-                loading={isUpgrading}
+                loading={isUpgrading && submittingPlan === "GROWTH"}
                 onClick={() => handleSelectPlan("GROWTH")}
               >
                 {currentPlan === "GROWTH" ? "Active Plan" : "Upgrade to Growth"}
@@ -318,7 +320,7 @@ export default function BillingPage() {
               </List>
               <Button
                 disabled={currentPlan === "PRO" || isUpgrading}
-                loading={isUpgrading}
+                loading={isUpgrading && submittingPlan === "PRO"}
                 onClick={() => handleSelectPlan("PRO")}
               >
                 {currentPlan === "PRO" ? "Active Plan" : "Upgrade to Pro"}
