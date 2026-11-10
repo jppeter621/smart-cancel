@@ -1,5 +1,6 @@
 /* global process */
-import { useLoaderData, useSubmit, useNavigation, useRouteError } from "react-router";
+import { useEffect } from "react";
+import { useLoaderData, useFetcher, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import {
   Page,
@@ -12,6 +13,7 @@ import {
   Badge,
   List,
   Divider,
+  Banner,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import {
@@ -25,18 +27,58 @@ export const loader = async ({ request }) => {
   const { session, billing } = await authenticate.admin(request);
   const shop = session.shop;
 
-  const settings = await db.cancelSettings.findUnique({ where: { shop } });
-  const currentPlan = settings?.plan || "FREE";
+  let currentPlan = "FREE";
+  let hasActivePayment = false;
+  let appSubscriptions = [];
 
-  const billingCheck = await billing.check({
-    plans: [MONTHLY_PLAN_GROWTH, MONTHLY_PLAN_PRO],
-    isTest: true,
-  });
+  try {
+    const billingCheck = await billing.check({
+      plans: [MONTHLY_PLAN_GROWTH, MONTHLY_PLAN_PRO],
+      isTest: true,
+    });
+    hasActivePayment = billingCheck.hasActivePayment;
+    appSubscriptions = billingCheck.appSubscriptions || [];
+
+    // If an active subscription exists on Shopify, sync it to the database
+    if (hasActivePayment && appSubscriptions.length > 0) {
+      const activeSub = appSubscriptions[0];
+      const activePlan =
+        activeSub.name === MONTHLY_PLAN_GROWTH
+          ? "GROWTH"
+          : activeSub.name === MONTHLY_PLAN_PRO
+          ? "PRO"
+          : "FREE";
+
+      const limit =
+        activePlan === "PRO" ? 999999 : activePlan === "GROWTH" ? 250 : 25;
+
+      await db.cancelSettings.upsert({
+        where: { shop },
+        update: { plan: activePlan, monthlyActionsLimit: limit },
+        create: {
+          shop,
+          plan: activePlan,
+          monthlyActionsLimit: limit,
+          cancellationWindowMinutes: 60,
+          allowAddressEdit: true,
+          allowCancellation: true,
+        },
+      });
+      currentPlan = activePlan;
+    } else {
+      const settings = await db.cancelSettings.findUnique({ where: { shop } });
+      currentPlan = settings?.plan || "FREE";
+    }
+  } catch (err) {
+    console.warn("Billing check or DB sync failed:", err?.message);
+    const settings = await db.cancelSettings.findUnique({ where: { shop } });
+    currentPlan = settings?.plan || "FREE";
+  }
 
   return {
     currentPlan,
-    hasActivePayment: billingCheck.hasActivePayment,
-    appSubscriptions: billingCheck.appSubscriptions,
+    hasActivePayment,
+    appSubscriptions,
   };
 };
 
@@ -47,7 +89,24 @@ export const action = async ({ request }) => {
   const plan = formData.get("plan");
 
   if (plan === "FREE") {
-    // Cancel active subscriptions if moving to free
+    try {
+      const billingCheck = await billing.check({
+        plans: [MONTHLY_PLAN_GROWTH, MONTHLY_PLAN_PRO],
+        isTest: true,
+      });
+      if (billingCheck.hasActivePayment && billingCheck.appSubscriptions?.length) {
+        for (const sub of billingCheck.appSubscriptions) {
+          await billing.cancel({
+            subscriptionId: sub.id,
+            isTest: true,
+            prorate: true,
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to cancel subscription via API:", e?.message);
+    }
+
     await db.cancelSettings.update({
       where: { shop },
       data: { plan: "FREE", monthlyActionsLimit: 25 },
@@ -58,32 +117,80 @@ export const action = async ({ request }) => {
   const targetPlan =
     plan === "GROWTH" ? MONTHLY_PLAN_GROWTH : MONTHLY_PLAN_PRO;
 
-  // Trigger Shopify Billing charge flow
-  await billing.request({
-    plan: targetPlan,
-    isTest: true,
-    returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing?confirmed=true`,
-  });
-
-  return null;
+  try {
+    return await billing.request({
+      plan: targetPlan,
+      isTest: true,
+    });
+  } catch (error) {
+    // If it's a redirect Response (Shopify App Bridge 401 redirect or 302), rethrow it
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error("Shopify billing request error:", error);
+    const errorMessage =
+      error?.errorData?.[0]?.message ||
+      error?.message ||
+      "Billing request could not be completed";
+    return { error: errorMessage };
+  }
 };
 
 export default function BillingPage() {
   const { currentPlan } = useLoaderData();
-  const submit = useSubmit();
-  const navigation = useNavigation();
-  const isUpgrading = navigation.state === "submitting";
+  const fetcher = useFetcher();
+  const isUpgrading = fetcher.state !== "idle";
+
+  useEffect(() => {
+    if (fetcher.data?.confirmationUrl) {
+      open(fetcher.data.confirmationUrl, "_top");
+    }
+  }, [fetcher.data]);
 
   const handleSelectPlan = (plan) => {
     const formData = new FormData();
     formData.append("plan", plan);
-    submit(formData, { method: "POST" });
+    fetcher.submit(formData, { method: "POST" });
   };
 
   return (
     <Page backAction={{ content: "Dashboard", url: "/app" }}>
       <TitleBar title="Plans & Subscription" />
       <BlockStack gap="500">
+        {fetcher.data?.error && (
+          <Banner title="Shopify Billing Notice" tone="critical">
+            <BlockStack gap="200">
+              <Text as="p" variant="bodyMd">
+                {fetcher.data.error}
+              </Text>
+              {fetcher.data.error.includes("public distribution") && (
+                <Text as="p" variant="bodySm">
+                  <strong>Action required:</strong> In your{" "}
+                  <a
+                    href="https://partners.shopify.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Shopify Partner Dashboard
+                  </a>
+                  , select your app <strong>smartcancel</strong>, click{" "}
+                  <strong>Distribution</strong> in the left sidebar, and select{" "}
+                  <strong>Public distribution</strong>. Shopify requires public
+                  distribution enabled before test stores can create subscriptions.
+                </Text>
+              )}
+            </BlockStack>
+          </Banner>
+        )}
+
+        {fetcher.data?.success && (
+          <Banner title="Plan updated" tone="success">
+            <Text as="p" variant="bodyMd">
+              Your store is now on the Free plan.
+            </Text>
+          </Banner>
+        )}
+
         <BlockStack gap="200">
           <Text as="h1" variant="headingLg">
             Choose the right plan for your business
@@ -169,6 +276,7 @@ export default function BillingPage() {
               <Button
                 variant="primary"
                 disabled={currentPlan === "GROWTH" || isUpgrading}
+                loading={isUpgrading}
                 onClick={() => handleSelectPlan("GROWTH")}
               >
                 {currentPlan === "GROWTH" ? "Active Plan" : "Upgrade to Growth"}
@@ -210,6 +318,7 @@ export default function BillingPage() {
               </List>
               <Button
                 disabled={currentPlan === "PRO" || isUpgrading}
+                loading={isUpgrading}
                 onClick={() => handleSelectPlan("PRO")}
               >
                 {currentPlan === "PRO" ? "Active Plan" : "Upgrade to Pro"}
@@ -221,7 +330,6 @@ export default function BillingPage() {
     </Page>
   );
 }
-
 
 export function ErrorBoundary() {
   return boundary.error(useRouteError());
