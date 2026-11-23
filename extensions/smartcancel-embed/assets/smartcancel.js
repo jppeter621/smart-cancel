@@ -152,11 +152,72 @@
       });
   };
 
+  function repositionPortal(root) {
+    if (!root || root.parentElement !== document.body) return;
+
+    const targets = [
+      ".customer.order",
+      ".customer.account",
+      "[data-order-details]",
+      "[data-customer-orders]",
+      ".order-details",
+      ".account-orders",
+      ".main__content",
+      ".content-box",
+      ".step__sections",
+      "main .page-width",
+      "main",
+      "#MainContent",
+    ];
+
+    for (const selector of targets) {
+      const target = document.querySelector(selector);
+      if (target) {
+        target.insertBefore(root, target.firstChild);
+        return;
+      }
+    }
+  }
+
   function initSmartCancel() {
     const root = document.querySelector(".smartcancel-container");
     if (!root) return;
 
-    const orderId = root.getAttribute("data-order-id");
+    // Check data attribute or dynamically detect from Shopify global objects/URL
+    let orderId = root.getAttribute("data-order-id");
+    let orderName = root.getAttribute("data-order-name");
+    let customerEmail = root.getAttribute("data-customer-email");
+
+    if (!orderId) {
+      if (window.Shopify?.checkout?.order_id) {
+        orderId = String(window.Shopify.checkout.order_id);
+      } else if (window.Shopify?.checkout?.id) {
+        orderId = String(window.Shopify.checkout.id);
+      } else if (window.Shopify?.order?.id) {
+        orderId = String(window.Shopify.order.id);
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        orderId = params.get("order_id") || params.get("order") || params.get("id");
+      }
+
+      if (orderId) {
+        root.setAttribute("data-order-id", orderId);
+        root.style.display = "block";
+      }
+    }
+
+    if (!orderName && window.Shopify?.checkout?.order_name) {
+      orderName = window.Shopify.checkout.order_name;
+      root.setAttribute("data-order-name", orderName);
+    }
+    if (!customerEmail && window.Shopify?.checkout?.email) {
+      customerEmail = window.Shopify.checkout.email;
+      root.setAttribute("data-customer-email", customerEmail);
+    }
+
+    // Reposition App Embed so it is immediately visible on Customer Profile & Order Status pages
+    repositionPortal(root);
+
     if (!orderId) return;
 
     // Fetch eligibility from App Proxy
@@ -165,12 +226,22 @@
       .then((data) => {
         if (data.error) {
           console.warn("[SmartCancel]", data.error);
+          const badgeElem = root.querySelector(".smartcancel-badge");
+          if (badgeElem) {
+            badgeElem.className = "smartcancel-badge expired";
+            badgeElem.innerHTML = data.error;
+          }
           return;
         }
         renderPortal(data);
       })
       .catch((err) => {
         console.error("[SmartCancel] Failed to load eligibility:", err);
+        const badgeElem = root.querySelector(".smartcancel-badge");
+        if (badgeElem) {
+          badgeElem.className = "smartcancel-badge expired";
+          badgeElem.innerHTML = "Eligibility check unavailable";
+        }
       });
 
     function renderPortal(data) {

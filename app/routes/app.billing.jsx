@@ -66,8 +66,20 @@ export const loader = async ({ request }) => {
       });
       currentPlan = activePlan;
     } else {
-      const settings = await db.cancelSettings.findUnique({ where: { shop } });
-      currentPlan = settings?.plan || "FREE";
+      // No active subscription on Shopify - immediately revert DB and state to FREE
+      await db.cancelSettings.upsert({
+        where: { shop },
+        update: { plan: "FREE", monthlyActionsLimit: 25 },
+        create: {
+          shop,
+          plan: "FREE",
+          monthlyActionsLimit: 25,
+          cancellationWindowMinutes: 60,
+          allowAddressEdit: true,
+          allowCancellation: true,
+        },
+      });
+      currentPlan = "FREE";
     }
   } catch (err) {
     console.warn("Billing check or DB sync failed:", err?.message);

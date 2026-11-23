@@ -70,17 +70,16 @@ export default function InsightsAndHelpPage() {
                     .
                   </List.Item>
                   <List.Item>
-                    In the page dropdown at the top, select{" "}
-                    <strong>Checkout &gt; Order status</strong> (or Customer
-                    account page).
+                    In the left sidebar, click the <strong>App embeds</strong> tab (third icon from top).
                   </List.Item>
                   <List.Item>
-                    Click <strong>Add Block / App Block</strong> and select{" "}
-                    <strong>SmartCancel Self-Serve Portal</strong>.
+                    Locate <strong>SmartCancel Self-Serve</strong> and toggle it <strong>ON</strong>.
                   </List.Item>
                   <List.Item>
-                    Click <strong>Save</strong> in the top right. Your
-                    customers can now manage their orders!
+                    (Optional) If you use custom sections on your Customer Account / Order pages, you can also click <strong>Add block</strong> and select <strong>SmartCancel Block</strong>.
+                  </List.Item>
+                  <List.Item>
+                    Click <strong>Save</strong> in the top right. SmartCancel will now automatically appear on your customer profile and order status pages!
                   </List.Item>
                 </List>
               </BlockStack>

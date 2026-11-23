@@ -21,12 +21,71 @@ import {
   Box,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { authenticate } from "../shopify.server";
+import {
+  authenticate,
+  MONTHLY_PLAN_GROWTH,
+  MONTHLY_PLAN_PRO,
+} from "../shopify.server";
 import db from "../db.server";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  const { session, billing } = await authenticate.admin(request);
   const shop = session.shop;
+
+  // Sync active subscription from Shopify Billing API to database on every index load
+  try {
+    const billingCheck = await billing.check({
+      plans: [MONTHLY_PLAN_GROWTH, MONTHLY_PLAN_PRO],
+      isTest: true,
+    });
+    const hasActivePayment = billingCheck.hasActivePayment;
+    const appSubscriptions = billingCheck.appSubscriptions || [];
+
+    if (hasActivePayment && appSubscriptions.length > 0) {
+      const activeSub = appSubscriptions[0];
+      const activePlan =
+        activeSub.name === MONTHLY_PLAN_GROWTH
+          ? "GROWTH"
+          : activeSub.name === MONTHLY_PLAN_PRO
+          ? "PRO"
+          : "FREE";
+      const limit =
+        activePlan === "PRO" ? 999999 : activePlan === "GROWTH" ? 250 : 25;
+
+      await db.cancelSettings.upsert({
+        where: { shop },
+        update: { plan: activePlan, monthlyActionsLimit: limit },
+        create: {
+          shop,
+          plan: activePlan,
+          monthlyActionsLimit: limit,
+          cancellationWindowMinutes: 60,
+          allowCancellation: true,
+          allowAddressEdit: true,
+          autoRestock: true,
+          autoRefund: true,
+        },
+      });
+    } else {
+      // Reinstall or uncharged store: ensure DB plan is synced to FREE
+      await db.cancelSettings.upsert({
+        where: { shop },
+        update: { plan: "FREE", monthlyActionsLimit: 25 },
+        create: {
+          shop,
+          plan: "FREE",
+          monthlyActionsLimit: 25,
+          cancellationWindowMinutes: 60,
+          allowCancellation: true,
+          allowAddressEdit: true,
+          autoRestock: true,
+          autoRefund: true,
+        },
+      });
+    }
+  } catch (err) {
+    console.warn("[app._index loader] Billing sync error:", err?.message);
+  }
 
   let settings = await db.cancelSettings.findUnique({ where: { shop } });
   if (!settings) {
@@ -449,14 +508,18 @@ export default function SmartCancelDashboard() {
                   </Text>
                   <Divider />
                   <Text as="p" variant="bodySm">
-                    <strong>1. Theme App Block:</strong>
+                    <strong>1. Theme App Embed:</strong>
                     <br />
-                    Add the <em>SmartCancel Self-Serve</em> block to your Order
-                    Status page or Customer Account template in your Theme
-                    Editor.
+                    Turn on the <em>SmartCancel Self-Serve</em> App Embed under
+                    Online Store &gt; Themes &gt; Customize &gt; App embeds.
                   </Text>
                   <Text as="p" variant="bodySm">
-                    <strong>2. Instant Protection:</strong>
+                    <strong>2. App Block (Optional):</strong>
+                    <br />
+                    You can also add the <em>SmartCancel Block</em> section block directly to your Customer Account or Order template.
+                  </Text>
+                  <Text as="p" variant="bodySm">
+                    <strong>3. Instant Protection:</strong>
                     <br />
                     Orders are automatically protected by your {windowMinutes}
                     -minute countdown lock.

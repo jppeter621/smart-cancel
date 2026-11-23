@@ -1,15 +1,26 @@
-{% if order %}
+{% assign target_order = order %}
+{% if target_order == blank and checkout.order %}
+  {% assign target_order = checkout.order %}
+{% endif %}
+{% if target_order == blank and customer.last_order %}
+  {% assign target_order = customer.last_order %}
+{% endif %}
+{% if target_order == blank and customer.orders.first %}
+  {% assign target_order = customer.orders.first %}
+{% endif %}
+
+{% if target_order %}
   <div
     class="smartcancel-container"
-    data-order-id="{{ order.id }}"
-    data-order-name="{{ order.name }}"
-    data-customer-email="{{ order.email }}"
+    data-order-id="{{ target_order.id }}"
+    data-order-name="{{ target_order.name }}"
+    data-customer-email="{{ target_order.email | default: customer.email }}"
   >
     <div class="smartcancel-header">
       <h3 class="smartcancel-title">{{ block.settings.heading | default: "Need to make changes to your order?" }}</h3>
       <div class="smartcancel-badge">
         <span class="smartcancel-pulse"></span>
-        <span>Checking order eligibility...</span>
+        <span>Checking order eligibility for {{ target_order.name }}...</span>
       </div>
     </div>
 
@@ -70,13 +81,56 @@
       💡 <em>Clicking either button opens the interactive modal preview. On real customer orders, this saves directly to Shopify.</em>
     </div>
   </div>
+{% elsif customer and customer.orders.size == 0 %}
+  <div class="smartcancel-container" style="padding: 16px 20px; border: 1px dashed #c9cccf; border-radius: 10px; background: #fafbfb; margin: 20px auto; max-width: 800px; text-align: center; color: #6d7175;">
+    <p style="margin: 0; font-size: 14px;">🛡️ <strong>SmartCancel:</strong> No active orders found to cancel or edit.</p>
+  </div>
+{% else %}
+  <!-- Dynamic Fallback for Order Status / Checkout pages -->
+  <div
+    class="smartcancel-container smartcancel-dynamic-container"
+    data-order-id=""
+    data-order-name=""
+    data-customer-email=""
+    style="display: none;"
+  >
+    <div class="smartcancel-header">
+      <h3 class="smartcancel-title">{{ block.settings.heading | default: "Need to make changes to your order?" }}</h3>
+      <div class="smartcancel-badge">
+        <span class="smartcancel-pulse"></span>
+        <span>Checking order eligibility...</span>
+      </div>
+    </div>
+
+    <div class="smartcancel-actions">
+      <button
+        type="button"
+        id="smartcancel-open-address-btn"
+        class="smartcancel-btn"
+        onclick="openSmartAddressModal()"
+        style="display: none;"
+      >
+        ✏️ Edit Shipping Address
+      </button>
+
+      <button
+        type="button"
+        id="smartcancel-open-cancel-btn"
+        class="smartcancel-btn smartcancel-btn-cancel"
+        onclick="openSmartCancelModal()"
+        style="display: none;"
+      >
+        ❌ Cancel Order
+      </button>
+    </div>
+  </div>
 {% endif %}
 
 <!-- Cancel Confirmation Modal -->
 <div id="smartcancel-cancel-modal" class="smartcancel-modal-overlay">
   <div class="smartcancel-modal">
     <div class="smartcancel-modal-header">
-      <h3 style="margin: 0; font-size: 18px;">Cancel Order {% if order %}{{ order.name }}{% else %}#1001 (Sample){% endif %}</h3>
+      <h3 style="margin: 0; font-size: 18px;">Cancel Order {% if target_order %}{{ target_order.name }}{% elsif order %}{{ order.name }}{% else %}#1001 (Sample){% endif %}</h3>
       <button type="button" class="smartcancel-modal-close" onclick="closeSmartCancelModal()">&times;</button>
     </div>
 
