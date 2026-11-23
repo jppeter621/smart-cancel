@@ -16,4 +16,3 @@ target = "customer-account.profile.block.render"
 
 [extensions.capabilities]
 api_access = true
-network_access = true
