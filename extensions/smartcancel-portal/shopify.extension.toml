@@ -1,0 +1,18 @@
+api_version = "2026-10"
+
+[[extensions]]
+name = "SmartCancel Portal"
+handle = "smartcancel-portal"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/OrderStatusBlock.jsx"
+target = "customer-account.order-status.block.render"
+
+[[extensions.targeting]]
+module = "./src/ProfileBlock.jsx"
+target = "customer-account.profile.block.render"
+
+[extensions.capabilities]
+api_access = true
+network_access = true
