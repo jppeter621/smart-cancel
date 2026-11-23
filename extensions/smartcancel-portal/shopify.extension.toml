@@ -3,6 +3,7 @@ api_version = "2026-10"
 [[extensions]]
 name = "SmartCancel Portal"
 handle = "smartcancel-portal"
+uid = "d146b0ff-82f3-75ed-456b-250a27250f7509a4d4d5"
 type = "ui_extension"
 
 [[extensions.targeting]]
